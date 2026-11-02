@@ -1,0 +1,7 @@
+out/
+data/*.jpg
+data/*.png
+!data/logo_src.png
+data/*.geojson
+data/geo.json
+__pycache__/

@@ -1,0 +1,47 @@
+{
+  "date_ar": "الاثنين 2 نونبر 2026",
+  "date_iso": "2026-11-02",
+  "source": "المديرية العامة للأرصاد الجوية",
+  "cities": {
+    "tanger":     {"min": 16, "max": 24, "cond": "partly"},
+    "tetouan":    {"min": 15, "max": 21, "cond": "partly"},
+    "alhoceima":  {"min": 15, "max": 22, "cond": "sunny"},
+    "oujda":      {"min": 10, "max": 25, "cond": "sunny"},
+    "bouarfa":    {"min": 9,  "max": 20, "cond": "drizzle"},
+    "kenitra":    {"min": 15, "max": 23, "cond": "fog"},
+    "rabat":      {"min": 15, "max": 23, "cond": "fog"},
+    "casablanca": {"min": 16, "max": 23, "cond": "fog"},
+    "eljadida":   {"min": 16, "max": 22, "cond": "fog"},
+    "settat":     {"min": 14, "max": 28, "cond": "sunny"},
+    "safi":       {"min": 12, "max": 27, "cond": "partly"},
+    "khouribga":  {"min": 15, "max": 26, "cond": "sunny"},
+    "benimellal": {"min": 16, "max": 29, "cond": "partly"},
+    "marrakech":  {"min": 16, "max": 29, "cond": "partly"},
+    "meknes":     {"min": 15, "max": 28, "cond": "sunny"},
+    "fes":        {"min": 15, "max": 26, "cond": "sunny"},
+    "ifrane":     {"min": 7,  "max": 18, "cond": "drizzle"},
+    "taounate":   {"min": 17, "max": 28, "cond": "sunny"},
+    "errachidia": {"min": 15, "max": 23, "cond": "rain"},
+    "ouarzazate": {"min": 13, "max": 22, "cond": "rain"},
+    "agadir":     {"min": 19, "max": 26, "cond": "rain"},
+    "essaouira":  {"min": 18, "max": 25, "cond": "partly"},
+    "laayoune":   {"min": 18, "max": 32, "cond": "thunder"},
+    "smara":      {"min": 22, "max": 32, "cond": "thunder"},
+    "dakhla":     {"min": 18, "max": 29, "cond": "thunder"},
+    "aousserd":   {"min": 21, "max": 30, "cond": "thunder"},
+    "lagouira":   {"min": 20, "max": 26, "cond": "thunder"},
+    "midelt":     {"min": 9,  "max": 22, "cond": "drizzle"}
+  },
+  "safi_note": "سحب منخفضة صباحاً ثم أجواء غائمة جزئياً",
+  "alerts": [
+    {"level": "high", "title": "زخات رعدية مع احتمال البَرَد", "areas": "الأقاليم الصحراوية"},
+    {"level": "medium", "title": "أمطار أو زخات مطرية", "areas": "الأطلس الكبير • سوس • الجنوب الشرقي"},
+    {"level": "low",   "title": "سحب منخفضة وضباب محلي صباحاً", "areas": "السواحل والسهول الأطلسية"}
+  ],
+  "alerts_official": false,
+  "sea": [
+    {"zone": "الساحل الأطلسي", "state": "قليل الهيجان إلى هائج"},
+    {"zone": "المتوسط والبوغاز", "state": "هادئ إلى قليل الهيجان"}
+  ],
+  "ticker": "زخات رعدية مع احتمال تساقط البَرَد بالأقاليم الصحراوية   •   أمطار أو زخات فوق مرتفعات الأطلس الكبير وسوس والجنوب الشرقي   •   قطرات متفرقة بالأطلس المتوسط وجنوب الجهة الشرقية   •   سحب منخفضة وضباب محلي صباحاً بالسواحل والسهول الأطلسية   •   البحر قليل الهيجان إلى هائج على طول الساحل الأطلسي   •   المصدر: المديرية العامة للأرصاد الجوية"
+}
