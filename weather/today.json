@@ -1,47 +1,288 @@
 {
-  "date_ar": "الاثنين 2 نونبر 2026",
-  "date_iso": "2026-11-02",
-  "source": "المديرية العامة للأرصاد الجوية",
-  "cities": {
-    "tanger":     {"min": 16, "max": 24, "cond": "partly"},
-    "tetouan":    {"min": 15, "max": 21, "cond": "partly"},
-    "alhoceima":  {"min": 15, "max": 22, "cond": "sunny"},
-    "oujda":      {"min": 10, "max": 25, "cond": "sunny"},
-    "bouarfa":    {"min": 9,  "max": 20, "cond": "drizzle"},
-    "kenitra":    {"min": 15, "max": 23, "cond": "fog"},
-    "rabat":      {"min": 15, "max": 23, "cond": "fog"},
-    "casablanca": {"min": 16, "max": 23, "cond": "fog"},
-    "eljadida":   {"min": 16, "max": 22, "cond": "fog"},
-    "settat":     {"min": 14, "max": 28, "cond": "sunny"},
-    "safi":       {"min": 12, "max": 27, "cond": "partly"},
-    "khouribga":  {"min": 15, "max": 26, "cond": "sunny"},
-    "benimellal": {"min": 16, "max": 29, "cond": "partly"},
-    "marrakech":  {"min": 16, "max": 29, "cond": "partly"},
-    "meknes":     {"min": 15, "max": 28, "cond": "sunny"},
-    "fes":        {"min": 15, "max": 26, "cond": "sunny"},
-    "ifrane":     {"min": 7,  "max": 18, "cond": "drizzle"},
-    "taounate":   {"min": 17, "max": 28, "cond": "sunny"},
-    "errachidia": {"min": 15, "max": 23, "cond": "rain"},
-    "ouarzazate": {"min": 13, "max": 22, "cond": "rain"},
-    "agadir":     {"min": 19, "max": 26, "cond": "rain"},
-    "essaouira":  {"min": 18, "max": 25, "cond": "partly"},
-    "laayoune":   {"min": 18, "max": 32, "cond": "thunder"},
-    "smara":      {"min": 22, "max": 32, "cond": "thunder"},
-    "dakhla":     {"min": 18, "max": 29, "cond": "thunder"},
-    "aousserd":   {"min": 21, "max": 30, "cond": "thunder"},
-    "lagouira":   {"min": 20, "max": 26, "cond": "thunder"},
-    "midelt":     {"min": 9,  "max": 22, "cond": "drizzle"}
+ "date_ar": "الاثنين 2 نونبر 2026",
+ "date_iso": "2026-11-02",
+ "source": "المديرية العامة للأرصاد الجوية",
+ "cities": {
+  "tanger": {
+   "min": 16,
+   "max": 24,
+   "cond": "partly"
   },
-  "safi_note": "سحب منخفضة صباحاً ثم أجواء غائمة جزئياً",
-  "alerts": [
-    {"level": "high", "title": "زخات رعدية مع احتمال البَرَد", "areas": "الأقاليم الصحراوية"},
-    {"level": "medium", "title": "أمطار أو زخات مطرية", "areas": "الأطلس الكبير • سوس • الجنوب الشرقي"},
-    {"level": "low",   "title": "سحب منخفضة وضباب محلي صباحاً", "areas": "السواحل والسهول الأطلسية"}
+  "tetouan": {
+   "min": 15,
+   "max": 21,
+   "cond": "partly"
+  },
+  "alhoceima": {
+   "min": 15,
+   "max": 22,
+   "cond": "sunny"
+  },
+  "oujda": {
+   "min": 10,
+   "max": 25,
+   "cond": "sunny"
+  },
+  "bouarfa": {
+   "min": 9,
+   "max": 20,
+   "cond": "drizzle"
+  },
+  "kenitra": {
+   "min": 15,
+   "max": 23,
+   "cond": "fog"
+  },
+  "rabat": {
+   "min": 15,
+   "max": 23,
+   "cond": "fog"
+  },
+  "casablanca": {
+   "min": 16,
+   "max": 23,
+   "cond": "fog"
+  },
+  "eljadida": {
+   "min": 16,
+   "max": 22,
+   "cond": "fog"
+  },
+  "settat": {
+   "min": 14,
+   "max": 28,
+   "cond": "sunny"
+  },
+  "safi": {
+   "min": 12,
+   "max": 27,
+   "cond": "partly"
+  },
+  "khouribga": {
+   "min": 15,
+   "max": 26,
+   "cond": "sunny"
+  },
+  "benimellal": {
+   "min": 16,
+   "max": 29,
+   "cond": "partly"
+  },
+  "marrakech": {
+   "min": 16,
+   "max": 29,
+   "cond": "partly"
+  },
+  "meknes": {
+   "min": 15,
+   "max": 28,
+   "cond": "sunny"
+  },
+  "fes": {
+   "min": 15,
+   "max": 26,
+   "cond": "sunny"
+  },
+  "ifrane": {
+   "min": 7,
+   "max": 18,
+   "cond": "drizzle"
+  },
+  "taounate": {
+   "min": 17,
+   "max": 28,
+   "cond": "sunny"
+  },
+  "errachidia": {
+   "min": 15,
+   "max": 23,
+   "cond": "rain"
+  },
+  "ouarzazate": {
+   "min": 13,
+   "max": 22,
+   "cond": "rain"
+  },
+  "agadir": {
+   "min": 19,
+   "max": 26,
+   "cond": "rain"
+  },
+  "essaouira": {
+   "min": 18,
+   "max": 25,
+   "cond": "partly"
+  },
+  "laayoune": {
+   "min": 18,
+   "max": 32,
+   "cond": "thunder"
+  },
+  "smara": {
+   "min": 22,
+   "max": 32,
+   "cond": "thunder"
+  },
+  "dakhla": {
+   "min": 18,
+   "max": 29,
+   "cond": "thunder"
+  },
+  "aousserd": {
+   "min": 21,
+   "max": 30,
+   "cond": "thunder"
+  },
+  "lagouira": {
+   "min": 20,
+   "max": 26,
+   "cond": "thunder"
+  },
+  "midelt": {
+   "min": 9,
+   "max": 22,
+   "cond": "drizzle"
+  }
+ },
+ "safi_note": "سحب منخفضة صباحاً ثم أجواء غائمة جزئياً",
+ "alerts": [
+  {
+   "level": "high",
+   "title": "زخات رعدية مع احتمال البَرَد",
+   "areas": "الأقاليم الصحراوية"
+  },
+  {
+   "level": "medium",
+   "title": "أمطار أو زخات مطرية",
+   "areas": "الأطلس الكبير • سوس • الجنوب الشرقي"
+  },
+  {
+   "level": "low",
+   "title": "سحب منخفضة وضباب محلي صباحاً",
+   "areas": "السواحل والسهول الأطلسية"
+  }
+ ],
+ "alerts_official": false,
+ "sea": [
+  {
+   "zone": "الساحل الأطلسي",
+   "state": "قليل الهيجان إلى هائج"
+  },
+  {
+   "zone": "المتوسط والبوغاز",
+   "state": "هادئ إلى قليل الهيجان"
+  }
+ ],
+ "ticker": "زخات رعدية مع احتمال تساقط البَرَد بالأقاليم الصحراوية   •   أمطار أو زخات فوق مرتفعات الأطلس الكبير وسوس والجنوب الشرقي   •   قطرات متفرقة بالأطلس المتوسط وجنوب الجهة الشرقية   •   سحب منخفضة وضباب محلي صباحاً بالسواحل والسهول الأطلسية   •   البحر قليل الهيجان إلى هائج على طول الساحل الأطلسي   •   ركوب الأمواج: آسفي 1.3 م / 13 ث • تاغازوت 0.9 م / 13 ث   •   المصدر: المديرية العامة للأرصاد الجوية",
+ "sea_zones": [
+  {
+   "zone": "البوغاز والواجهة المتوسطية",
+   "state": "هادئ إلى قليل الهيجان",
+   "waves": "0.1 – 1.25 م",
+   "lat": 36.75,
+   "lon": -3.6,
+   "h": 0.6
+  },
+  {
+   "zone": "طنجة – الدار البيضاء",
+   "state": "قليل الهيجان إلى هائج",
+   "waves": "1.4 م قبالة الدار البيضاء",
+   "lat": 34.3,
+   "lon": -8.7,
+   "h": 1.4
+  },
+  {
+   "zone": "الدار البيضاء – أكادير",
+   "state": "قليل الهيجان إلى هائج",
+   "waves": "1.3 م قبالة آسفي",
+   "lat": 31.9,
+   "lon": -10.6,
+   "h": 1.3
+  },
+  {
+   "zone": "أكادير – طرفاية",
+   "state": "قليل الهيجان إلى هائج",
+   "waves": "0.9 م قبالة تاغازوت",
+   "lat": 29.3,
+   "lon": -11.9,
+   "h": 1.0
+  },
+  {
+   "zone": "طرفاية – الكويرة",
+   "state": "قليل الهيجان إلى هائج",
+   "waves": "0.5 – 2.5 م",
+   "lat": 24.2,
+   "lon": -17.4,
+   "h": 1.3
+  }
+ ],
+ "sea_note": "انتفاخ (Swell) من الشمال الغربي بدورة 12–13 ثانية • رياح خفيفة إلى معتدلة",
+ "swell_from_deg": 315,
+ "surf": [
+  {
+   "name": "آسفي",
+   "spot": "Safi Garden",
+   "lat": 32.32,
+   "lon": -9.27,
+   "wave": "1.3",
+   "period": "13",
+   "dir": "شمال غربي",
+   "dir_deg": 315,
+   "wind": "10 كم/س شمالية شرقية",
+   "wind_state": "عرضية مواتية",
+   "water": "17.8",
+   "tide": "مد 08:46 • جزر 15:26",
+   "rating": 3
+  },
+  {
+   "name": "تاغازوت",
+   "spot": "Anchor Point",
+   "lat": 30.54,
+   "lon": -9.73,
+   "wave": "0.9",
+   "period": "13",
+   "dir": "غربي شمالي غربي",
+   "dir_deg": 300,
+   "wind": "خفيفة حتى 11 كم/س",
+   "wind_state": "ضعيفة",
+   "water": "",
+   "tide": "",
+   "rating": 0
+  }
+ ],
+ "surf_source": "surf-forecast.com • windfinder",
+ "outlook": [
+  {
+   "day": "الثلاثاء",
+   "cond": "partly",
+   "text": "انخفاض الحرارة بالشمال والوسط",
+   "safi_max": 21,
+   "safi_min": 18
+  },
+  {
+   "day": "الأربعاء",
+   "cond": "rain",
+   "text": "أمطار ضعيفة بالسهول الأطلسية ورياح جنوبية غربية",
+   "safi_max": 20,
+   "safi_min": 18
+  },
+  {
+   "day": "الخميس",
+   "cond": "partly",
+   "text": "تحسن تدريجي للأجواء"
+  }
+ ],
+ "outlook_system": {
+  "label": "اضطراب أطلسي ضعيف",
+  "when": "الأربعاء",
+  "from": [
+   37.5,
+   -17.0
   ],
-  "alerts_official": false,
-  "sea": [
-    {"zone": "الساحل الأطلسي", "state": "قليل الهيجان إلى هائج"},
-    {"zone": "المتوسط والبوغاز", "state": "هادئ إلى قليل الهيجان"}
-  ],
-  "ticker": "زخات رعدية مع احتمال تساقط البَرَد بالأقاليم الصحراوية   •   أمطار أو زخات فوق مرتفعات الأطلس الكبير وسوس والجنوب الشرقي   •   قطرات متفرقة بالأطلس المتوسط وجنوب الجهة الشرقية   •   سحب منخفضة وضباب محلي صباحاً بالسواحل والسهول الأطلسية   •   البحر قليل الهيجان إلى هائج على طول الساحل الأطلسي   •   المصدر: المديرية العامة للأرصاد الجوية"
+  "to": [
+   33.6,
+   -7.5
+  ]
+ },
+ "outlook_note": "حسب نماذج التوقعات العددية • قابلة للتحيين"
 }

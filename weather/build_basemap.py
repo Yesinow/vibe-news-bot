@@ -160,6 +160,7 @@ out = Image.fromarray((img * 255).astype(np.uint8))
 out = out.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=2))
 out.save(os.path.join(D, "basemap.png"))
 m_mask.save(os.path.join(D, "morocco_mask.png"))
+Image.fromarray((land * 255).astype(np.uint8)).save(os.path.join(D, "land_mask.png"))
 json.dump({"LON0": LON0, "LON1": LON1, "LAT0": LAT0, "LAT1": LAT1, "PPD": PPD,
            "K": float(K), "W": W, "H": H}, open(os.path.join(D, "geo.json"), "w"))
 out.resize((W // 4, H // 4)).save(os.path.join(D, "basemap_preview.jpg"), quality=85)

@@ -415,17 +415,26 @@ def build(data, out_path, preview=None):
     NORTH = cam_for(34.25, -5.35, 175)
     CENTER = cam_for(32.15, -8.15, 190)
     SOUTH = cam_for(24.0, -13.8, 100)
+    SEA = cam_for(28.6, -11.0, 58)
+    SURF = cam_for(31.35, -9.7, 250)
+    OUTLOOK = cam_for(32.6, -10.0, 75)
 
     # timeline
-    T_INTRO = 3.4
-    scenes = [  # (name, cam, start, end, safe area y0,y1, priority keys)
-        ("full", FULL, 3.0, 11.0, 330, 1530),
-        ("north", NORTH, 12.6, 18.8, 360, 1700),
-        ("center", CENTER, 20.4, 27.0, 360, 1390),
-        ("south", SOUTH, 28.8, 35.0, 360, 1420),
-        ("final", FULL, 36.6, 43.0, 330, 900),
+    T_INTRO = 4.2
+    scenes = [  # (name, cam, start, end, safe area y0,y1)
+        ("full", FULL, 3.8, 13.0, 330, 1530),
+        ("temp", FULL, 13.6, 21.5, 330, 1530),
+        ("north", NORTH, 24.0, 32.5, 360, 1700),
+        ("center", CENTER, 35.0, 43.5, 360, 1390),
+        ("south", SOUTH, 46.0, 54.0, 360, 1420),
+        ("sea", SEA, 56.6, 65.5, 330, 1480),
+        ("surf", SURF, 68.0, 78.0, 330, 1300),
+        ("outlook", OUTLOOK, 80.5, 89.5, 330, 1300),
+        ("final", FULL, 92.0, 99.5, 330, 900),
     ]
-    T_OUT0, DUR = 43.0, 46.5
+    T_OUT0, DUR = 99.5, 104.0
+    BADGE_SCENES = {"full", "north", "center", "south", "final"}
+    SC = {sc[0]: sc for sc in scenes}
     nfr = int(DUR * FPS)
 
     def camera(t):
@@ -509,7 +518,7 @@ def build(data, out_path, preview=None):
 
     placements = {}
     for sc in scenes:
-        placements[sc[0]] = layout(sc)
+        placements[sc[0]] = layout(sc) if sc[0] in BADGE_SCENES else []
         _badge_pos[sc[0]] = {k: pos for k, _, pos, _ in placements[sc[0]]}
 
     # -------- static overlays
@@ -580,7 +589,19 @@ def build(data, out_path, preview=None):
 
     CHIPS = {"full": chip("المغرب من طنجة إلى الكويرة"), "north": chip("الشمال والشرق والوسط"),
              "center": chip("آسفي وجهة مراكش"), "south": chip("الأقاليم الجنوبية", GOLD),
-             "final": chip("تنبيهات اليوم", (255, 120, 60))}
+             "final": chip("تنبيهات اليوم", (255, 120, 60)),
+             "temp": chip("طبقة درجات الحرارة العليا", (255, 150, 60)),
+             "sea": chip("حالة البحر • للبحارة", CYAN),
+             "surf": chip("ركوب الأمواج: آسفي وتاغازوت", TEAL),
+             "outlook": chip("الأيام المقبلة", PURPLE)}
+
+    def small_src(txt):
+        return text_img(txt, font(F_M, 28), (200, 210, 235))
+
+    SRC = {"sea": small_src("حسب " + data.get("source", "") + " و windfinder"),
+           "surf": small_src("المصدر: " + data.get("surf_source", "")),
+           "outlook": small_src(data.get("outlook_note", "")),
+           "temp": small_src("حسب " + data.get("source", ""))}
 
     # -------- panels
     def stat_card(title, key, accent):
@@ -740,19 +761,286 @@ def build(data, out_path, preview=None):
         lg = logo.resize((size, size), Image.LANCZOS)
         paste(im, lg, FW / 2 - size / 2, 760 - size / 2, u)
         a2 = clamp01((t - 0.5) / 0.5)
-        t1 = text_img("تابعوا قايب كل صباح", font(F_XB, 76), WHITE)
+        t1 = text_img("تابعوا ڤايب كل صباح", font(F_XB, 76), WHITE)
         paste(im, t1, FW / 2 - t1.width / 2, 1040, a2)
         t2 = text_img("المصدر: " + data.get("source", ""), font(F_M, 40), (190, 200, 225))
         paste(im, t2, FW / 2 - t2.width / 2, 1160, a2)
         return im
 
     # -------- frame loop
+    # ================= extra layers =================
+    land_q = np.array(Image.open(os.path.join(D, "land_mask.png")).resize((gw, gh), Image.BILINEAR)).astype(np.float32) / 255
+    mor_q = np.array(Image.open(os.path.join(D, "morocco_mask.png")).resize((gw, gh), Image.BILINEAR)).astype(np.float32) / 255
+    YQ, XQ = np.mgrid[0:gh, 0:gw].astype(np.float32)
+    LATQ = geo["LAT1"] - YQ * 4 / geo["PPD"]
+    LONQ = geo["LON0"] + XQ * 4 / (geo["PPD"] * geo["K"])
+
+    def to_screen_layer(rgba_arr, cam):
+        im = Image.fromarray(rgba_arr, "RGBA")
+        a = 1 / (cam[2] * 4)
+        return im.transform((FW, FH), Image.AFFINE, (a, 0, cam[0] / 4 - FW / 2 * a, 0, a, cam[1] / 4 - VY * a),
+                            Image.BILINEAR)
+
+    LUT = np.array([temp_color(v / 10) for v in range(-50, 451)], np.float32)
+
+    def build_temp_layer():
+        num = np.zeros((gh, gw), np.float32)
+        den = np.zeros((gh, gw), np.float32)
+        for k, c in cities.items():
+            x, y = ll2map(CITIES[k][1], CITIES[k][2])
+            d2 = (XQ - x / 4) ** 2 + (YQ - y / 4) ** 2 + 30.0
+            w = 1 / d2 ** 1.6
+            num += w * c["max"]
+            den += w
+        T = num / den
+        idx = np.clip(((T + 5) * 10).astype(int), 0, len(LUT) - 1)
+        rgb = LUT[idx]
+        m = gaussian_filter(mor_q, 1.2)
+        arr = np.zeros((gh, gw, 4), np.uint8)
+        arr[..., :3] = rgb.astype(np.uint8)
+        arr[..., 3] = (np.clip(m, 0, 1) * 175).astype(np.uint8)
+        return arr
+
+    TEMP_L = build_temp_layer()
+
+    def legend_panel(title, stops, labels, w=1000, h=170):
+        g, gp = glass((w, h), r=30, border=(TEAL, PURPLE), bw=3, a=165)
+        t = text_img(title, font(F_XB, 38), WHITE, shadow=False)
+        paste(g, t, gp + w - 30 - t.width + 14, gp + 8)
+        bw_, bx, by = w - 80, gp + 40, gp + 78
+        bar = np.zeros((26, bw_, 4), np.uint8)
+        for i in range(bw_):
+            bar[:, i, :3] = stops(i / (bw_ - 1))
+        bar[..., 3] = 255
+        bm = Image.new("L", (bw_, 26), 0)
+        ImageDraw.Draw(bm).rounded_rectangle((0, 0, bw_ - 1, 25), 13, fill=255)
+        bi = Image.fromarray(bar)
+        bi.putalpha(bm)
+        paste(g, bi, bx, by)
+        for u, lab in labels:
+            lt = text_img(lab, font(F_B, 28), (225, 230, 245), shadow=False)
+            paste(g, lt, bx + u * (bw_ - 1) - lt.width / 2, by + 26)
+        return g
+
+    TEMP_LEG = legend_panel("درجات الحرارة العليا لليوم", lambda u: temp_color(5 + u * 30),
+                            [(0, "5°"), (1 / 3, "15°"), (2 / 3, "25°"), (1, "35°")])
+    TEMP_LABEL_KEYS = [k for k in ["tanger", "oujda", "fes", "casablanca", "safi", "marrakech", "errachidia",
+                                   "agadir", "laayoune", "dakhla", "lagouira"] if k in cities]
+
+    def temp_label(k):
+        c = cities[k]
+        im = Image.new("RGBA", (200, 120), (0, 0, 0, 0))
+        v = text_img(f"{c['max']}°", font(F_XB, 46), WHITE, stroke=2, stroke_fill=(20, 20, 40))
+        n = text_img(CITIES[k][0], font(F_B, 26), (240, 240, 250), stroke=2, stroke_fill=(20, 20, 40))
+        paste(im, v, 100 - v.width / 2, 0)
+        paste(im, n, 100 - n.width / 2, 50)
+        return im
+
+    TEMP_LABELS = {k: temp_label(k) for k in TEMP_LABEL_KEYS}
+
+    # ---- sea / waves
+    def wave_color(h):
+        stops = [(0, (40, 110, 255)), (0.8, (50, 200, 230)), (1.6, (90, 230, 160)), (2.5, (255, 210, 60)),
+                 (4, (255, 80, 60))]
+        for (a, ca), (b, cb) in zip(stops, stops[1:]):
+            if h <= b:
+                u = clamp01((h - a) / (b - a))
+                return tuple(int(ca[i] + (cb[i] - ca[i]) * u) for i in range(3))
+        return stops[-1][1]
+
+    zones = data.get("sea_zones", [])
+    from scipy.ndimage import distance_transform_edt
+    dist_q = distance_transform_edt(land_q < 0.5)
+    ocean_a = np.exp(-dist_q / 45.0) * (1 - land_q)
+    atl = [z for z in zones if z["lon"] < -5.6]
+    if atl:
+        zl = sorted(atl, key=lambda z: z["lat"])
+        H = np.interp(LATQ, [z["lat"] for z in zl], [z.get("h", 1.0) for z in zl])
+    else:
+        H = np.ones_like(LATQ)
+    med = [z for z in zones if z["lon"] >= -5.6]
+    if med:
+        mm_ = (LONQ > -5.6) & (LATQ > 35.0)
+        H = np.where(mm_, med[0].get("h", 0.5), H)
+    WLUT = np.array([wave_color(v / 20) for v in range(0, 81)], np.float32)
+    WRGB = WLUT[np.clip((H * 20).astype(int), 0, 80)]
+    sd = math.radians(data.get("swell_from_deg", 315))
+    # travel direction in map coords (x east, y south): from NW -> toward SE
+    vx, vy = -math.sin(sd), math.cos(sd)
+    PROJ = XQ * vx + YQ * vy
+
+    def wave_layer(t, strength=1.0):
+        crest = 0.55 * (0.5 + 0.5 * np.sin(PROJ / 9.0 * 2 * math.pi / 3.2 - t * 1.8)) ** 6
+        a = ocean_a * (0.42 + 0.5 * crest) * strength
+        arr = np.zeros((gh, gw, 4), np.uint8)
+        arr[..., :3] = np.clip(WRGB * (1 - 0.6 * crest[..., None]) + 255 * 0.6 * crest[..., None], 0, 255).astype(np.uint8)
+        arr[..., 3] = (np.clip(a, 0, 1) * 255).astype(np.uint8)
+        return arr
+
+    def zone_card(z):
+        n = text_img(z["zone"], font(F_B, 28), WHITE, shadow=False)
+        st = text_img(z["state"], font(F_M, 26), (200, 215, 240), shadow=False)
+        wv = text_img(z["waves"], font(F_XB, 30), wave_color(z.get("h", 1)), shadow=False)
+        w = max(n.width, st.width, wv.width) - 28 + 40
+        h = 128
+        g, gp = glass((w, h), r=22, border=(CYAN, PURPLE), bw=2, a=160)
+        for i, im in enumerate((n, st, wv)):
+            paste(g, im, gp + w - 20 - im.width + 14, gp + 2 + i * 38)
+        return g
+
+    ZONE_C = [(z, zone_card(z)) for z in zones]
+    SEA_LEG = legend_panel("ارتفاع الموج (م) • " + data.get("sea_note", "")[:0] + "للبحارة",
+                           lambda u: wave_color(u * 4), [(0, "0"), (0.25, "1"), (0.5, "2"), (0.75, "3"), (1, "4")],
+                           h=150)
+    SEA_NOTE = text_img(data.get("sea_note", ""), font(F_M, 30), (220, 230, 250))
+
+    # ---- surf cards
+    def arrow_img(deg_from, size=110, col=TEAL):
+        im = Image.new("RGBA", (size * 2, size * 2), (0, 0, 0, 0))
+        d = ImageDraw.Draw(im)
+        c = size
+        d.polygon([(c, c - size * 0.85), (c + size * 0.45, c + size * 0.1), (c + size * 0.15, c + size * 0.05),
+                   (c + size * 0.15, c + size * 0.8), (c - size * 0.15, c + size * 0.8), (c - size * 0.15, c + size * 0.05),
+                   (c - size * 0.45, c + size * 0.1)], fill=col + (255,))
+        # arrow points up = travelling north; travel direction = from + 180
+        travel = (deg_from + 180) % 360
+        im = im.rotate(-travel, resample=Image.BICUBIC)
+        return im.resize((size, size), Image.LANCZOS)
+
+    def surf_card(sp):
+        w, h = 490, 520
+        g, gp = glass((w, h), r=32, border=(TEAL, CYAN) if sp["name"] != "آسفي" else (GOLD, (255, 120, 60)),
+                      bw=3, a=170)
+        R_ = gp + w - 26
+        n = text_img(sp["name"], font(F_XB, 54), WHITE, shadow=False)
+        paste(g, n, R_ - n.width + 14, gp + 4)
+        s_ = text_img(sp["spot"], font(F_M, 28), (190, 205, 230), shadow=False)
+        paste(g, s_, R_ - s_.width + 14, gp + 72)
+        hv = float(sp["wave"])
+        wv = text_img(sp["wave"] + " م", font(F_XB, 92), wave_color(hv), shadow=False)
+        paste(g, wv, R_ - wv.width + 14, gp + 104)
+        pr = text_img("الدورة " + sp["period"] + " ث", font(F_B, 34), WHITE, shadow=False)
+        paste(g, pr, R_ - pr.width + 14, gp + 214)
+        dr = text_img("الانتفاخ: " + sp["dir"], font(F_M, 28), (200, 215, 240), shadow=False)
+        paste(g, dr, R_ - dr.width + 14, gp + 262)
+        wd = text_img("الرياح: " + sp["wind"], font(F_M, 28), (200, 215, 240), shadow=False)
+        paste(g, wd, R_ - wd.width + 14, gp + 304)
+        y = gp + 346
+        extra = []
+        if sp.get("wind_state"):
+            extra.append(("حالة الريح: " + sp["wind_state"], (140, 230, 200)))
+        if sp.get("water"):
+            extra.append(("حرارة الماء " + sp["water"] + "°", (140, 210, 255)))
+        if sp.get("tide"):
+            extra.append((sp["tide"], (200, 205, 225)))
+        for txt, col in extra[:3]:
+            e = text_img(txt, font(F_M, 26), col, shadow=False)
+            paste(g, e, R_ - e.width + 14, y)
+            y += 36
+        ar = arrow_img(sp.get("dir_deg", 315), 120, TEAL)
+        paste(g, ar, gp + 30, gp + 120)
+        lab = text_img("اتجاه الموج", font(F_M, 24), (190, 200, 220), shadow=False)
+        paste(g, lab, gp + 90 - lab.width / 2, gp + 240)
+        return g
+
+    SURF_C = [surf_card(sp) for sp in data.get("surf", [])[:2]]
+
+    def spot_chip(sp):
+        t = text_img(sp["name"] + " • " + sp["spot"], font(F_B, 30), WHITE, shadow=False)
+        g, gp = glass((t.width + 10, 62), r=31, border=(GOLD, TEAL), bw=2, a=170)
+        paste(g, t, gp + 5, gp + (62 - t.height) / 2 + 2)
+        return g
+
+    SPOT_C = [(sp, spot_chip(sp)) for sp in data.get("surf", [])[:2]]
+
+    # ---- outlook
+    def wrap(txt, f, maxw):
+        words, lines, cur = txt.split(), [], ""
+        for wd in words:
+            cand = (cur + " " + wd).strip()
+            if tsize(cand, f)[0] <= maxw or not cur:
+                cur = cand
+            else:
+                lines.append(cur)
+                cur = wd
+        if cur:
+            lines.append(cur)
+        return lines
+
+    def outlook_panel():
+        days = data.get("outlook", [])[:3]
+        w, h = 1000, 440
+        g, gp = glass((w, h), r=34, border=(PURPLE, TEAL), bw=3, a=170)
+        t = text_img("الأيام المقبلة", font(F_XB, 46), WHITE, shadow=False)
+        paste(g, t, gp + w - 30 - t.width + 14, gp + 6)
+        colw = (w - 40) / max(1, len(days))
+        icons = []
+        for i, dd in enumerate(days):
+            cx = gp + w - 20 - colw * (i + 0.5)       # RTL: first day on the right
+            dn = text_img(dd["day"], font(F_XB, 40), TEAL, shadow=False)
+            paste(g, dn, cx - dn.width / 2, gp + 70)
+            icons.append((dd["cond"], cx - 60, gp + 126))
+            y = gp + 252
+            for ln in wrap(dd["text"], font(F_M, 26), colw - 40)[:3]:
+                lt = text_img(ln, font(F_M, 26), (220, 228, 245), shadow=False)
+                paste(g, lt, cx - lt.width / 2, y)
+                y += 34
+            if dd.get("safi_max") is not None:
+                lab = text_img("آسفي", font(F_B, 28), GOLD, shadow=False)
+                mx = text_img(f"{dd['safi_max']}°", font(F_XB, 34), temp_color(dd["safi_max"]), shadow=False)
+                mn = text_img(f"{dd['safi_min']}°", font(F_B, 28), (180, 200, 230), shadow=False)
+                tot = lab.width + mx.width + mn.width - 84 + 20
+                x0 = cx + tot / 2
+                paste(g, lab, x0 - lab.width + 14, gp + 372)
+                x0 -= lab.width - 28 + 10
+                paste(g, mx, x0 - mx.width + 14, gp + 368)
+                x0 -= mx.width - 28 + 10
+                paste(g, mn, x0 - mn.width + 14, gp + 374)
+            if i > 0:
+                ln_ = Image.new("RGBA", (2, h - 110), (140, 150, 200, 90))
+                paste(g, ln_, cx + colw / 2, gp + 80)
+        return g, icons
+
+    OUT_P, OUT_ICONS = outlook_panel() if data.get("outlook") else (None, [])
+    osys = data.get("outlook_system")
+
+    def sys_chip():
+        if not osys:
+            return None
+        t = text_img(osys["label"] + " • " + osys.get("when", ""), font(F_B, 30), WHITE, shadow=False)
+        g, gp = glass((t.width + 10, 62), r=31, border=(PURPLE, CYAN), bw=2, a=175)
+        paste(g, t, gp + 5, gp + (62 - t.height) / 2 + 2)
+        return g
+
+    SYS_C = sys_chip()
+
+    def band_layer(t, u):
+        f = ll2map(*osys["from"])
+        to = ll2map(*osys["to"])
+        cx = (f[0] + (to[0] - f[0]) * u) / 4
+        cy = (f[1] + (to[1] - f[1]) * u) / 4
+        dx, dy = to[0] - f[0], to[1] - f[1]
+        L = math.hypot(dx, dy)
+        nx, ny = dx / L, dy / L
+        dn = (XQ - cx) * nx + (YQ - cy) * ny
+        dp = (XQ - cx) * (-ny) + (YQ - cy) * nx
+        n1 = np.roll(noise, (int(t * 4) % gh, int(t * 7) % gw), axis=(0, 1))
+        a = np.exp(-dn ** 2 / (2 * 38 ** 2)) * np.exp(-dp ** 2 / (2 * 190 ** 2))
+        a = a * np.clip(0.45 + 1.1 * (n1 - 0.4), 0, 1)
+        core = np.exp(-dn ** 2 / (2 * 14 ** 2)) * np.exp(-dp ** 2 / (2 * 120 ** 2))
+        arr = np.zeros((gh, gw, 4), np.uint8)
+        col = np.array([235, 240, 250], np.float32) * (1 - 0.35 * core[..., None]) + \
+            np.array([60, 120, 220], np.float32) * 0.35 * core[..., None]
+        arr[..., :3] = np.clip(col, 0, 255).astype(np.uint8)
+        arr[..., 3] = (np.clip(a * 1.15, 0, 1) * 225).astype(np.uint8)
+        return arr, (cx * 4, cy * 4), (nx, ny)
+
     frames_idx = range(nfr) if preview is None else [int(p * FPS) for p in preview]
     proc = None if preview is not None else subprocess.Popen(["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
                              "-s", f"{FW}x{FH}", "-r", str(FPS), "-i", "-", "-c:v", "libx264",
                              "-preset", "veryfast", "-crf", "19", "-pix_fmt", "yuv420p",
                              "-movflags", "+faststart", out_path + ".video.mp4"], stdin=subprocess.PIPE)
-    flashes = sorted(random.uniform(29.2, 34.8) for _ in range(7))
+    flashes = sorted(random.uniform(SC['south'][2] + 0.5, SC['south'][3]) for _ in range(8))
     south_keys = [k for k in cities if cities[k]["cond"] == "thunder"]
 
     for fi in frames_idx:
@@ -788,26 +1076,91 @@ def build(data, out_path, preview=None):
                     fl = Image.new("RGBA", (500, 500), (0, 0, 0, 0))
                     ImageDraw.Draw(fl).ellipse((50, 50, 450, 450), fill=(235, 235, 255, int(150 * inten)))
                     paste(frame, fl.filter(ImageFilter.GaussianBlur(60)), px - 250, py - 250)
-            # vignette-ish top/bottom handled by header & ticker
-            # which scene are we in (for badges)?
             cur = None
             for sc in scenes:
                 if sc[2] - 0.05 <= t <= sc[3] + 0.6:
                     cur = sc
+            # geographic layers that live across scene boundaries
+            sea_on = 0.0
+            for nm_, k_ in (("sea", 1.0), ("surf", 0.5)):
+                a0 = SC[nm_][2] - 1.4
+                a1 = SC[nm_][3] + 0.6
+                if a0 <= t <= a1:
+                    sea_on = max(sea_on, k_ * clamp01((t - a0) / 1.2) * clamp01((a1 - t) / 0.6))
+            if sea_on > 0.01:
+                frame.alpha_composite(to_screen_layer(wave_layer(t, sea_on), cam))
             if cur is not None:
                 name = cur[0]
                 tin = t - cur[2]
                 tout = cur[3] + 0.6 - t
                 fade_out = clamp01(tout / 0.45)
+                if name == "temp":
+                    la = clamp01(tin / 1.0) * fade_out
+                    lay = TEMP_L.copy()
+                    lay[..., 3] = (lay[..., 3] * la).astype(np.uint8)
+                    frame.alpha_composite(to_screen_layer(lay, cam))
+                    for i, k in enumerate(TEMP_LABEL_KEYS):
+                        u = clamp01((tin - 0.8 - i * 0.12) / 0.5)
+                        if u > 0:
+                            px, py = to_screen(cam, CITIES[k][1], CITIES[k][2])
+                            im = TEMP_LABELS[k]
+                            paste(frame, im, px - 100, py - 40, u * fade_out)
+                if name == "outlook" and osys:
+                    u = ease(clamp01(tin / (cur[3] - cur[2])))
+                    lay, (bxm, bym), (nx, ny) = band_layer(t, u)
+                    la = clamp01(tin / 0.8) * fade_out
+                    lay[..., 3] = (lay[..., 3] * la).astype(np.uint8)
+                    frame.alpha_composite(to_screen_layer(lay, cam))
+                    sx = (bxm - cam[0]) * cam[2] + FW / 2
+                    sy = (bym - cam[1]) * cam[2] + VY
+                    # motion arrow
+                    ar = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+                    da = ImageDraw.Draw(ar)
+                    ex, ey = sx + nx * 170, sy + ny * 170
+                    da.line((sx + nx * 40, sy + ny * 40, ex, ey), fill=(255, 255, 255, int(220 * la)), width=8)
+                    px_, py_ = -ny, nx
+                    da.polygon([(ex + nx * 30, ey + ny * 30), (ex + px_ * 22, ey + py_ * 22), (ex - px_ * 22, ey - py_ * 22)],
+                               fill=(255, 255, 255, int(230 * la)))
+                    frame.alpha_composite(ar)
+                    if SYS_C is not None:
+                        cxs = min(max(sx - SYS_C.width / 2, 10), FW - SYS_C.width - 10)
+                        cys = min(max(sy - 150, 330), 1250)
+                        frost(frame, SYS_C, cxs, cys, la)
+                if name == "sea":
+                    for i, (z, zc) in enumerate(ZONE_C):
+                        u = clamp01((tin - 0.6 - i * 0.35) / 0.6)
+                        if u <= 0:
+                            continue
+                        px, py = to_screen(cam, z["lat"], z["lon"])
+                        x0 = min(max(px - zc.width / 2, 0), FW - zc.width)
+                        frost(frame, zc, x0, py - zc.height / 2, ease(u) * fade_out)
+                if name == "surf":
+                    for i, (sp, chp) in enumerate(SPOT_C):
+                        u = clamp01((tin - 0.4 - i * 0.4) / 0.6)
+                        if u <= 0:
+                            continue
+                        px, py = to_screen(cam, sp["lat"], sp["lon"])
+                        pulse = (t * 1.0 + i * 0.5) % 1
+                        pin = Image.new("RGBA", (120, 120), (0, 0, 0, 0))
+                        dp = ImageDraw.Draw(pin)
+                        rr = 12 + 44 * pulse
+                        dp.ellipse((60 - rr, 60 - rr, 60 + rr, 60 + rr), outline=GOLD + (int(230 * (1 - pulse)),), width=4)
+                        dp.ellipse((48, 48, 72, 72), fill=GOLD + (255,))
+                        dp.ellipse((54, 54, 66, 66), fill=(255, 255, 255, 255))
+                        paste(frame, pin, px - 60, py - 60, u * fade_out)
+                        frost(frame, chp, px + 30, py - chp.height / 2, u * fade_out)
                 # chip
                 ch = CHIPS[name]
                 ca_ = clamp01(tin / 0.4) * fade_out
                 frost(frame, ch, FW - 40 - ch.width + 30 + 60 * (1 - ease(clamp01(tin / 0.5))), 222, ca_)
+                if name in SRC:
+                    sr = SRC[name]
+                    paste(frame, sr, FW - 40 - sr.width + 14, 322, ca_)
                 for i, (k, (px0, py0), _bp, b) in enumerate(placements[name]):
                     px, py = to_screen(cam, CITIES[k][1], CITIES[k][2])
                     dx, dy = px - px0, py - py0
-                    delay = 0.25 + i * 0.11
-                    u = clamp01((tin - delay) / 0.55)
+                    delay = 0.35 + i * 0.16
+                    u = clamp01((tin - delay) / 0.75)
                     if u <= 0:
                         continue
                     sp_ = spring(u)
@@ -852,6 +1205,23 @@ def build(data, out_path, preview=None):
                 if name == "south" and SOUTH_P is not None and pu > 0:
                     yb = 1560 + 140 * (1 - pu)
                     frost(frame, SOUTH_P, FW / 2 - SOUTH_P.width / 2, yb, pu)
+                if name == "temp" and pu > 0:
+                    frost(frame, TEMP_LEG, FW / 2 - TEMP_LEG.width / 2, 1560 + 120 * (1 - pu), pu)
+                if name == "sea" and pu > 0:
+                    yb = 1545 + 120 * (1 - pu)
+                    frost(frame, SEA_LEG, FW / 2 - SEA_LEG.width / 2, yb, pu)
+                    paste(frame, SEA_NOTE, FW / 2 - SEA_NOTE.width / 2, yb - 40, pu)
+                if name == "surf" and pu > 0 and SURF_C:
+                    yb = 1255 + 140 * (1 - pu)
+                    for i, c_ in enumerate(SURF_C):
+                        x = FW - 20 - c_.width + 30 - i * (c_.width - 60 + 20) if len(SURF_C) > 1 else FW / 2 - c_.width / 2
+                        frost(frame, c_, x, yb, pu)
+                if name == "outlook" and pu > 0 and OUT_P is not None:
+                    yb = 1330 + 140 * (1 - pu)
+                    frost(frame, OUT_P, FW / 2 - OUT_P.width / 2, yb, pu)
+                    for i, (cond, ix, iy) in enumerate(OUT_ICONS):
+                        fr = icon_frames(cond, 120)[(fi + i * 7) % NLOOP]
+                        paste(frame, fr, FW / 2 - OUT_P.width / 2 + ix, yb + iy, pu)
                 if name == "final" and pu > 0:
                     yb = 1770 - ALERTS_P.height + 30 + 140 * (1 - pu)
                     frost(frame, ALERTS_P, FW / 2 - ALERTS_P.width / 2, yb, pu)
@@ -859,7 +1229,7 @@ def build(data, out_path, preview=None):
             frame.alpha_composite(HEADER, (0, 0))
             frame.alpha_composite(TBAND, (0, TK_Y - 120))
             strip = Image.new("RGBA", (FW, TK_H), (0, 0, 0, 0))
-            tx = -tick_txt.width + (t - T_INTRO + 2) * 150
+            tx = -tick_txt.width + (t - T_INTRO + 2) * 105
             tx = (tx % tick_txt.width) - tick_txt.width
             for k in range(3):
                 paste(strip, tick_txt, tx + k * tick_txt.width, (TK_H - tick_txt.height) // 2 + 2)
@@ -891,7 +1261,7 @@ def build(data, out_path, preview=None):
         return
     proc.stdin.close()
     proc.wait()
-    flights = [sc[2] - 1.6 for sc in scenes[1:]]
+    flights = [b[2] - 1.9 for a, b in zip(scenes, scenes[1:]) if a[1] != b[1]]
     make_audio(out_path + ".wav", DUR, flights, [T_INTRO, T_OUT0])
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", out_path + ".video.mp4", "-i", out_path + ".wav",
                     "-c:v", "copy", "-c:a", "aac", "-b:a", "160k", "-shortest", out_path], check=True)

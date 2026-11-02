@@ -13,9 +13,19 @@
    - WebSearch: `نشرة إنذارية الأرصاد الجوية <التاريخ>` — إن وُجدت نشرة رسمية سارية اليوم ضع `"alerts_official": true`
      واذكر الظاهرة والأقاليم ومستوى اليقظة في العنوان. إن لم توجد، اجعلها false (يظهر "تنبيهات الطقس لليوم حسب توقعات المديرية").
    - (اختياري) https://www.weather-forecast.com/countries/Morocco لحالة السماء الحالية بالمدن.
+   - البحر وركوب الأمواج: WebSearch `surf forecast Safi Garden` و`windfinder Taghazout` و`windfinder Casablanca`
+     ثم WebFetch لروابط النتائج: ارتفاع الموج (م)، الدورة (ث)، اتجاه الانتفاخ، الرياح، حرارة الماء، المد والجزر.
+     تحقق من تاريخ التحديث (بعض صفحات windfinder تكون قديمة — تجاهلها).
+     حالة البحر الرسمية لكل واجهة من نص نشرة المديرية (سلم دوغلاس: هادئ 0.1–0.5م، قليل الهيجان 0.5–1.25م،
+     هائج 1.25–2.5م، قوي الهيجان 2.5–4م).
+   - الأيام المقبلة: https://www.meteomaroc.com/ar (توقعات 15 يوماً) + أي مقال حديث عن منخفض/اضطراب قادم.
+     اذكر أنها "حسب نماذج التوقعات" إن لم تكن من نشرة رسمية. لا تخترع منخفضاً.
 3. اكتب `weather/today.json` بنفس بنية الملف الموجود: `cond` واحدة من
    `sunny, partly, cloudy, fog, drizzle, rain, thunder, snow, wind` حسب النص الجهوي للنشرة.
-   مفاتيح المدن: انظر `CITIES` في `render.py`. آسفي إجبارية.
-4. `cd weather && python3 render.py today.json out/qayeb_meteo_<YYYY-MM-DD>.mp4` (~5 دقائق).
-5. تحقق من 3 لقطات (`python3 render.py today.json /tmp/pv/f "8.5,24,41"`) ثم أرسل الفيديو للمستخدم مع سطر عربي:
+   مفاتيح المدن: انظر `CITIES` في `render.py`. آسفي والكويرة إجباريتان.
+   الحقول الإضافية: `sea_zones` (zone, state, waves, lat, lon, h)، `sea_note`، `swell_from_deg`،
+   `surf` (آسفي ثم تاغازوت: wave, period, dir, dir_deg, wind, wind_state, water, tide, rating)،
+   `outlook` (3 أيام: day, cond, text, safi_max, safi_min)، `outlook_system` (label, when, from, to) أو null.
+4. `cd weather && python3 render.py today.json out/qayeb_meteo_<YYYY-MM-DD>.mp4` (~11 دقيقة، شغّله في الخلفية وتابع /tmp/render.log).
+5. تحقق من 3 لقطات (`python3 render.py today.json /tmp/pv/f "9,17,60,72,85,96"`) ثم أرسل الفيديو للمستخدم مع سطر عربي:
    أبرز ما في النشرة + المصدر.
