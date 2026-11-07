@@ -1,0 +1,27 @@
+name: fetch-media
+on:
+  push:
+    branches: [media]
+    paths: [fetch.txt]
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: media }
+      - name: Download listed images
+        run: |
+          mkdir -p src
+          while read -r name url; do
+            [ -z "$name" ] && continue
+            curl -sSL --fail -o "src/$name" "$url"
+          done < fetch.txt
+      - name: Commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add src
+          git commit -m "Fetch source images" || exit 0
+          git push
