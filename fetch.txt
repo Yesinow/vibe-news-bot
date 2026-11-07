@@ -1,5 +1,6 @@
-barcelone.jpg https://images.unsplash.com/photo-1739532827391-45e14eed59c3?ixlib=rb-4.1.0&q=85&fm=jpg&crop=entropy&cs=srgb&w=1600
-emploi.jpg https://images.unsplash.com/photo-1648691175490-f27c283e5b59?ixlib=rb-4.1.0&q=85&fm=jpg&crop=entropy&cs=srgb&w=1600
-port.jpg https://images.unsplash.com/photo-1590496793907-4d66e2994b4d?ixlib=rb-4.1.0&q=85&fm=jpg&crop=entropy&cs=srgb&w=1600
-prof.jpg https://images.unsplash.com/photo-1511629091441-ee46146481b6?ixlib=rb-4.1.0&q=85&fm=jpg&crop=entropy&cs=srgb&w=1600
-stade2.jpg https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?ixlib=rb-4.1.0&q=85&fm=jpg&crop=entropy&cs=srgb&w=1600
+s1.jpg Asfi by night.png
+s2.jpg Safi1 (js).jpg
+s3.jpg Tres belle vue.jpg
+s4.jpg Safi4 (js).jpg
+s5.jpg Corniche souiria leqdima.jpg
+s6.jpg Vue sur la plage.jpg
