@@ -16,9 +16,12 @@ jobs:
           UA="VibeNewsBot/1.0 (github.com/Yesinow/vibe-news-bot)"
           while read -r name file; do
             [ -z "$name" ] && continue
-            f=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$file")
-            curl -sSL --fail -A "$UA" -o "src/$name" "https://commons.wikimedia.org/wiki/Special:FilePath/$f?width=1600"
-            curl -sSL -A "$UA" -o "src/$name.json" "https://commons.wikimedia.org/w/api.php?action=query&titles=File:$f&prop=imageinfo&iiprop=extmetadata&format=json"
+            case "$file" in
+              http*) curl -sSL --fail -A "$UA" -o "src/$name" "$file" ;;
+              *) f=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$file")
+                 curl -sSL --fail -A "$UA" -o "src/$name" "https://commons.wikimedia.org/wiki/Special:FilePath/$f?width=1600"
+                 curl -sSL -A "$UA" -o "src/$name.json" "https://commons.wikimedia.org/w/api.php?action=query&titles=File:$f&prop=imageinfo&iiprop=extmetadata&format=json" ;;
+            esac
           done < fetch.txt
           git config user.name github-actions
           git config user.email github-actions@users.noreply.github.com
