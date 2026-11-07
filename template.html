@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Salma;src:url(SalmaArabic-Black.otf)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1350px;overflow:hidden;background:#06123a}
+.card{position:relative;width:1080px;height:1350px;overflow:hidden}
+.photo{position:absolute;left:0;top:{{PHOTO_TOP}}px;width:1080px;height:calc(1350px - {{PHOTO_TOP}}px);
+  object-fit:cover;object-position:{{PHOTO_POS}};filter:contrast(1.06) saturate(1.08)}
+.sky{position:absolute;inset:0;background:
+  radial-gradient(ellipse 620px 330px at 520px 360px, rgba(40,110,210,.75), rgba(40,110,210,0) 70%),
+  linear-gradient(180deg,#071a4f 0px,#0a2766 300px,#0b2a6d 520px,rgba(11,42,109,.92) 600px,rgba(11,42,109,.55) 680px,rgba(11,42,109,0) 760px)}
+.warm{position:absolute;left:0;right:0;top:600px;height:220px;
+  background:radial-gradient(ellipse 520px 120px at 560px 150px,rgba(255,170,40,.35),rgba(255,170,40,0) 70%)}
+.vign{position:absolute;inset:0;box-shadow:inset 0 -120px 140px -60px rgba(0,0,0,.45)}
+.grain{position:absolute;inset:0;width:1080px;height:1350px;mix-blend-mode:overlay;opacity:.38}
+.brand{position:absolute;top:70px;left:58px;font-family:Salma;font-size:64px;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.35)}
+.block{position:absolute;right:82px;top:230px;width:800px;text-align:right}
+h1{font-family:Salma;font-weight:400;font-size:{{TITLE_SIZE}}px;line-height:1.2;color:#ffd21a;
+  text-shadow:0 4px 0 rgba(0,0,0,.18),0 8px 26px rgba(0,0,0,.35);margin-bottom:22px;white-space:nowrap}
+.bar{display:block;background:#e3362b;color:#fff;font-family:Salma;font-size:54px;line-height:1.15;
+  padding:10px 30px;margin-top:22px;text-align:center;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.logo{position:absolute;right:30px;bottom:30px;width:120px;height:120px;border-radius:50%;object-fit:cover;box-shadow:0 6px 22px rgba(0,0,0,.55)}
+</style></head>
+<body><div class="card">
+  <img class="photo" src="{{PHOTO}}">
+  <div class="warm"></div><div class="sky"></div><div class="vign"></div>
+  <img class="grain" src="grain.png">
+  <div class="brand">ڤايب</div>
+  <div class="block"><h1>{{TITRE}}</h1>{{BARS}}</div>
+  <img class="logo" src="logo-vibe.jpg">
+</div></body></html>
