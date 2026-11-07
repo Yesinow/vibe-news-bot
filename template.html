@@ -32,4 +32,12 @@ h1{font-family:Salma;font-weight:400;font-size:{{TITLE_SIZE}}px;line-height:1.2;
   <div class="block"><h1>{{TITRE}}</h1>{{BARS}}</div>
   {{SOURCE}}
   <img class="logo" src="logo-vibe.jpg">
-</div></body></html>
+</div><script>
+function fit(){const max=860;document.querySelectorAll('.block h1,.block .bar').forEach(el=>{
+ let fs=parseFloat(getComputedStyle(el).fontSize);el.style.display=el.tagName=='H1'?'block':'block';
+ const pad=el.classList.contains('bar')?60:0;
+ const m=document.createElement('span');m.style.cssText='font-family:Salma;white-space:nowrap;position:absolute;visibility:hidden';m.textContent=el.textContent;document.body.appendChild(m);
+ while(fs>30){m.style.fontSize=fs+'px';if(m.getBoundingClientRect().width+pad<=max)break;fs-=2;}
+ el.style.fontSize=fs+'px';m.remove();});}
+document.fonts.ready.then(fit);
+</script></body></html>

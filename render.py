@@ -26,7 +26,7 @@ t = (t.replace('{{TITRE}}', html.escape(a.titre)).replace('{{BARS}}', bars)
 open(os.path.join(tmp, 'card.html'), 'w', encoding='utf-8').write(t)
 chrome = shutil.which('google-chrome') or shutil.which('chromium') or shutil.which('chromium-browser')
 png = os.path.join(tmp, 'out.png')
-subprocess.run([chrome, '--headless=new', '--no-sandbox', '--disable-gpu', '--hide-scrollbars',
+subprocess.run([chrome, '--headless=new', '--no-sandbox', '--disable-gpu', '--hide-scrollbars', '--virtual-time-budget=3000',
                 '--window-size=1080,1350', f'--screenshot={png}', 'file://' + os.path.join(tmp, 'card.html')],
                check=True, capture_output=True)
 Image.open(png).convert('RGB').save(a.out, quality=92)
