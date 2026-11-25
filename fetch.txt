@@ -1,3 +1,1 @@
-oued.jpg https://images.unsplash.com/photo-1759868414148-913f1cc34049?ixlib=rb-4.1.0&q=85&fm=jpg&crop=entropy&cs=srgb&w=1600
-desert.jpg https://images.unsplash.com/photo-1489573280374-2e193c63726c?ixlib=rb-4.1.0&q=85&fm=jpg&crop=entropy&cs=srgb&w=1600
-drapeau.jpg https://images.unsplash.com/photo-1776151976038-b7e9e0e81c3e?ixlib=rb-4.1.0&q=85&fm=jpg&crop=entropy&cs=srgb&w=1600
+passport.jpg https://images.unsplash.com/photo-1454496406107-dc34337da8d6?ixlib=rb-4.1.0&q=85&fm=jpg&crop=entropy&cs=srgb&w=1600
